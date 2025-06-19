@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+# winesetup
+# by stdrice <stdrice@disroot.org>
+# See LICENSE file for copyright and license details.
+# To understand everything else, start reading main().
+
+set -e
+
+# Functions
+install_debian() {
+    echo "[+] Installing Wine for Debian/Ubuntu..."
+    $ELEV dpkg --add-architecture i386
+    $ELEV mkdir -pm755 /etc/apt/keyrings
+    $ELEV wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+    CODENAME=$(lsb_release -cs)
+    $ELEV wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/"$CODENAME"/winehq-"$CODENAME".sources
+    $ELEV apt update
+    $ELEV apt install --install-recommends winehq-staging winetricks -y
+}
+
+install_fedora() {
+    echo "[+] Installing Wine for Fedora..."
+    FVERSION=$(rpm -E %fedora)
+    $ELEV dnf install https://dl.winehq.org/wine-builds/fedora/"${FVERSION}"/winehq.repo -y
+    $ELEV dnf install winehq-staging winetricks -y
+}
+
+install_arch() {
+    echo "[+] Installing Wine for Arch..."
+    CONF="/etc/pacman.conf"
+    if ! grep -q "^\[multilib\]" "$CONF"; then
+        $ELEV sed -i '/^\#\[multilib\]/,/^\#Include/s/^\#//' "$CONF"
+        $ELEV pacman -Sy
+    fi
+    $ELEV pacman -Sy --needed --noconfirm wine-staging wine-mono wine-gecko winetricks
+}
+
+install_opensuse() {
+    echo "[+] Installing Wine for openSUSE..."
+    if [[ "$VERSION" == *"Tumbleweed"* ]]; then
+        REPO_URL="https://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/"
+    else
+        # Fallback for Leap (change version as needed)
+        REPO_URL="https://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_${VERSION}/"
+    fi
+    $ELEV zypper ar -f "$REPO_URL" wine
+    $ELEV zypper ref
+    $ELEV zypper install wine wine-staging winetricks
+}
+
+install_void(){
+    echo "[+] Installing Wine for Void..."
+    $ELEV xbps-install -Sy wine wine-gecko wine-mono winetricks
+}
+
+install_gentoo(){
+    echo "[+] Installing Wine for Gentoo..."
+    if [ -d /etc/portage/package.use ]; then
+        echo "app-emulation/wine staging" | $ELEV tee /etc/portage/package.use/wine
+    else
+        echo "app-emulation/wine staging" | $ELEV tee -a /etc/portage/package.use
+    fi
+    $ELEV emerge --sync
+    $ELEV emerge app-emulation/wine app-emulation/winetricks
+}
+
+bootstraps(){
+    if [ "$EUID" -eq 0 ]; then
+        echo "[!] Do NOT run this script as root!"
+        echo "    It should be run as a regular user."
+        exit 1
+    fi
+
+    echo "[+] Welcome!"
+    echo "    This is 'winesetup', a script that automatically installs and setups Wine for daily usage on your Linux system."
+
+    while true; do
+	      read -rp "Do you want to continue? [Y/n]: " yn
+	      case $yn in
+	          [Nn]*) exit ;;
+	          *) break ;;
+	      esac
+    done
+
+    if command -v sudo &>/dev/null; then
+        ELEV="sudo"
+    elif command -v doas &>/dev/null; then
+        ELEV="doas"
+    else
+        echo "[!] Neither 'sudo' nor 'doas' found. Please install one."
+        exit 1
+    fi
+
+    $ELEV true || exit 1
+}
+
+prompt(){
+    read -rp "[?] Enter Wine prefix directory (default: ~/.wine) (leave blank to use default option): " PREFIX_DIR
+    PREFIX_DIR=${PREFIX_DIR:-$HOME/.wine}
+}
+
+install_wine(){
+    if command -v pacman &>/dev/null; then
+        install_arch
+    elif command -v xbps-install &>/dev/null; then
+        install_void
+    elif command -v emerge &>/dev/null; then
+        install_gentoo
+    elif command -v apt &>/dev/null; then
+        install_debian
+    elif command -v dnf &>/dev/null; then
+        install_fedora
+    elif command -v zypper &>/dev/null; then
+        install_opensuse
+    else
+        echo "[!] Unsupported distro"
+        exit 1
+    fi
+
+    if ! command -v wine &>/dev/null; then
+        echo "[!] Wine failed to install. Please check for errors."
+        exit 1
+    fi
+}
+
+setup_wine(){
+    echo "[+] Setting-up Wine..."
+    export WINEPREFIX="$PREFIX_DIR"
+    mkdir -p "$WINEPREFIX"
+    wineboot --init
+    winetricks -q corefonts cjkfonts d3dx9 dotnet20 dotnet48 dxvk gdiplus vcrun2022 vkd3d 
+}
+
+complete_msg(){
+    echo "[+] Done!"
+    echo "    Thanks for using my script!"
+}
+
+# Main
+main(){
+    bootstraps
+    prompt
+    install_wine
+    setup_wine
+    complete_msg
+}
+
+main
+
+exit 0
