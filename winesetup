@@ -12,11 +12,13 @@ install_debian() {
     echo "[+] Installing Wine for Debian/Ubuntu..."
     $ELEV dpkg --add-architecture i386
     $ELEV mkdir -pm755 /etc/apt/keyrings
+
     $ELEV wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
     CODENAME=$(lsb_release -cs)
     $ELEV wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/"$CODENAME"/winehq-"$CODENAME".sources
+
     $ELEV apt update
-    $ELEV apt install --install-recommends winehq-staging winetricks -y
+    $ELEV apt install --install-recommends winehq-staging winetricks ca-certificates -y
 }
 
 install_fedora() {
@@ -28,22 +30,26 @@ install_fedora() {
 
 install_arch() {
     echo "[+] Installing Wine for Arch..."
+
     CONF="/etc/pacman.conf"
     if ! grep -q "^\[multilib\]" "$CONF"; then
         $ELEV sed -i '/^\#\[multilib\]/,/^\#Include/s/^\#//' "$CONF"
         $ELEV pacman -Sy
     fi
+
     $ELEV pacman -Sy --needed --noconfirm wine-staging wine-mono wine-gecko winetricks
 }
 
 install_opensuse() {
     echo "[+] Installing Wine for openSUSE..."
+
     if [[ "$VERSION" == *"Tumbleweed"* ]]; then
         REPO_URL="https://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/"
     else
         # Fallback for Leap (change version as needed)
         REPO_URL="https://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_${VERSION}/"
     fi
+
     $ELEV zypper ar -f "$REPO_URL" wine
     $ELEV zypper ref
     $ELEV zypper install wine wine-staging winetricks
@@ -56,11 +62,13 @@ install_void(){
 
 install_gentoo(){
     echo "[+] Installing Wine for Gentoo..."
+
     if [ -d /etc/portage/package.use ]; then
         echo "app-emulation/wine staging" | $ELEV tee /etc/portage/package.use/wine
     else
         echo "app-emulation/wine staging" | $ELEV tee -a /etc/portage/package.use
     fi
+
     $ELEV emerge --sync
     $ELEV emerge app-emulation/wine app-emulation/winetricks
 }
@@ -126,10 +134,12 @@ install_wine(){
 
 setup_wine(){
     echo "[+] Setting-up Wine..."
+
     export WINEPREFIX="$PREFIX_DIR"
     mkdir -p "$WINEPREFIX"
     wineboot --init
     winetricks -q corefonts cjkfonts d3dx9 dotnet20 dotnet48 dxvk gdiplus vcrun2022 vkd3d
+
     wine reg add "HKCU\\Software\\Wine\\WineBrowser" /v "Browser" /d "xdg-open" /f
     wine reg add "HKCR\http\shell\open\command" /ve /d "\"winebrowser\" \"%1\"" /f
     wine reg add "HKCR\https\shell\open\command" /ve /d "\"winebrowser\" \"%1\"" /f
