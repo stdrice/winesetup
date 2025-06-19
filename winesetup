@@ -129,7 +129,10 @@ setup_wine(){
     export WINEPREFIX="$PREFIX_DIR"
     mkdir -p "$WINEPREFIX"
     wineboot --init
-    winetricks -q corefonts cjkfonts d3dx9 dotnet20 dotnet48 dxvk gdiplus vcrun2022 vkd3d 
+    winetricks -q corefonts cjkfonts d3dx9 dotnet20 dotnet48 dxvk gdiplus vcrun2022 vkd3d
+    wine reg add "HKCU\\Software\\Wine\\WineBrowser" /v "Browser" /d "xdg-open" /f
+    wine reg add "HKCR\http\shell\open\command" /ve /d "\"winebrowser\" \"%1\"" /f
+    wine reg add "HKCR\https\shell\open\command" /ve /d "\"winebrowser\" \"%1\"" /f
 }
 
 complete_msg(){
