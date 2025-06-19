@@ -25,8 +25,8 @@ install_debian() {
 install_fedora() {
     echo "[+] Installing Wine for Fedora..."
     FVERSION=$(rpm -E %fedora)
-    $ELEV dnf install https://dl.winehq.org/wine-builds/fedora/"${FVERSION}"/winehq.repo -y
-    $ELEV dnf install winehq-staging winetricks -y
+    $ELEV dnf install -y 'https://dl.winehq.org/wine-builds/fedora/"${FVERSION}"/winehq.repo'
+    $ELEV dnf install -y winehq-staging winetricks
 }
 
 install_arch() {
@@ -53,7 +53,7 @@ install_opensuse() {
 
     $ELEV zypper ar -f "$REPO_URL" wine
     $ELEV zypper ref
-    $ELEV zypper install wine wine-staging winetricks
+    $ELEV zypper install -y wine-staging winetricks
 }
 
 install_void(){
