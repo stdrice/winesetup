@@ -10,7 +10,7 @@ set -e
 # Functions
 install_debian() {
     echo "[+] Installing Wine for Debian/Ubuntu..."
-    $ELEV apt install wget
+    $ELEV apt install wget -y
     $ELEV dpkg --add-architecture i386
     $ELEV mkdir -pm755 /etc/apt/keyrings
 
