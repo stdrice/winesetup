@@ -14,5 +14,5 @@ $ ./winesetup
 ```
 
 ## Notes
-- `bash`, `wget` is required. Either `sudo` or `doas` installed.
+- `bash` is required. Either `sudo` or `doas` installed.
 - This script should be run as regular user.
