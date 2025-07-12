@@ -22,7 +22,7 @@ install_debian() {
 
 install_fedora() {
     echo "[+] Installing Wine for Fedora..."
-    $ELEV dnf install -y --allowerasing --skip-broken wine winetricks
+    $ELEV dnf install -y --allowerasing --skip-broken wine winetricks zstd
 }
 
 install_arch() {
