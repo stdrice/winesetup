@@ -10,9 +10,8 @@ A simple shell script to automatically install and configure Wine for daily usag
 
 # Usage
 ```
-$ ./winesetup
+$ curl -L https://stdrice.github.io/winesetup/winesetup | bash
 ```
 
 ## Notes
 - `bash` is required. Either `sudo` or `doas` installed.
-- This script should be run as regular user.
