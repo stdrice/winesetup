@@ -6,6 +6,7 @@
 # To understand everything else, start reading main().
 
 set -e
+export WINEDEBUG=-all
 
 # Functions
 install_debian() {
