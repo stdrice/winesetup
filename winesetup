@@ -17,14 +17,12 @@ install_debian() {
     CODENAME=$(lsb_release -cs)
     $ELEV wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/"$CODENAME"/winehq-"$CODENAME".sources
     $ELEV apt update
-    $ELEV apt install --install-recommends winehq-staging winetricks ca-certificates -y
+    $ELEV apt install --install-recommends winehq-stable winetricks ca-certificates -y
 }
 
 install_fedora() {
     echo "[+] Installing Wine for Fedora..."
-    FVERSION=$(rpm -E %fedora)
-    $ELEV dnf config-manager addrepo --overwrite --from-repofile "https://dl.winehq.org/wine-builds/fedora/${FVERSION}/winehq.repo"
-    $ELEV dnf install -y winehq-staging winetricks
+    $ELEV dnf install -y --allowerasing --skip-broken wine winetricks
 }
 
 install_arch() {
@@ -34,7 +32,7 @@ install_arch() {
         $ELEV sed -i '/^\#\[multilib\]/,/^\#Include/s/^\#//' "$CONF"
         $ELEV pacman -Sy
     fi
-    $ELEV pacman -Sy --needed --noconfirm wine-staging wine-mono wine-gecko winetricks
+    $ELEV pacman -Sy --needed --noconfirm wine wine-mono wine-gecko winetricks
 }
 
 install_opensuse() {
@@ -47,7 +45,7 @@ install_opensuse() {
     fi
     $ELEV zypper ar -f "$REPO_URL" wine
     $ELEV zypper ref
-    $ELEV zypper install -y wine-staging winetricks
+    $ELEV zypper install -y wine winetricks
 }
 
 install_void(){
@@ -57,13 +55,8 @@ install_void(){
 
 install_gentoo(){
     echo "[+] Installing Wine for Gentoo..."
-    if [ -d /etc/portage/package.use ]; then
-        echo "app-emulation/wine staging" | $ELEV tee /etc/portage/package.use/wine
-    else
-        echo "app-emulation/wine staging" | $ELEV tee -a /etc/portage/package.use
-    fi
     $ELEV emerge --sync
-    $ELEV emerge app-emulation/wine app-emulation/winetricks
+    $ELEV emerge app-emulation/wine-vanilla app-emulation/winetricks
 }
 
 bootstraps(){
