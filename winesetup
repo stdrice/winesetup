@@ -23,7 +23,7 @@ install_debian() {
 install_fedora() {
     echo "[+] Installing Wine for Fedora..."
     FVERSION=$(rpm -E %fedora)
-    $ELEV dnf install -y 'https://dl.winehq.org/wine-builds/fedora/"${FVERSION}"/winehq.repo'
+    $ELEV dnf config-manager addrepo --from-repofile "https://dl.winehq.org/wine-builds/fedora/${FVERSION}/winehq.repo"
     $ELEV dnf install -y winehq-staging winetricks
 }
 
