@@ -10,7 +10,7 @@ A simple shell script to automatically install and configure Wine for daily usag
 
 # Usage
 ```
-$ curl -L https://stdrice.github.io/winesetup/winesetup | bash
+$ bash <(curl -L https://stdrice.github.io/winesetup/winesetup)
 ```
 
 ## Notes
