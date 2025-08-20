@@ -14,7 +14,8 @@ install_debian() {
     $ELEV apt install wget -y
     $ELEV dpkg --add-architecture i386
     $ELEV mkdir -pm755 /etc/apt/keyrings
-    $ELEV wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+    [ -f /etc/apt/keyrings/winehq-archive.key ] && $ELEV rm /etc/apt/keyrings/winehq-archive.key
+    wget -O - https://dl.winehq.org/wine-builds/winehq.key | $ELEV gpg --dearmor -o /etc/apt/keyrings/winehq-archive.key
     CODENAME=$(lsb_release -cs)
     $ELEV wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/"$CODENAME"/winehq-"$CODENAME".sources
     $ELEV apt update
