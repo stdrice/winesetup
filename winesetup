@@ -16,8 +16,14 @@ install_debian() {
     $ELEV mkdir -pm755 /etc/apt/keyrings
     [ -f /etc/apt/keyrings/winehq-archive.key ] && $ELEV rm /etc/apt/keyrings/winehq-archive.key
     wget -O - https://dl.winehq.org/wine-builds/winehq.key | $ELEV gpg --dearmor -o /etc/apt/keyrings/winehq-archive.key
-    CODENAME=$(lsb_release -cs)
-    $ELEV wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/"$CODENAME"/winehq-"$CODENAME".sources
+    DISTRO=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    CODENAME=$(lsb_release -cs 2>/dev/null || echo unknown)
+    case "$DISTRO" in
+        debian) URL="https://dl.winehq.org/wine-builds/debian/dists/$CODENAME/winehq-$CODENAME.sources" ;;
+        ubuntu) URL="https://dl.winehq.org/wine-builds/ubuntu/dists/$CODENAME/winehq-$CODENAME.sources" ;;
+        *) URL="https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources" ;;
+    esac
+    $ELEV wget -NP /etc/apt/sources.list.d/ "$URL"
     $ELEV apt update
     $ELEV apt install --install-recommends winehq-staging winetricks ca-certificates zstd -y
 }
